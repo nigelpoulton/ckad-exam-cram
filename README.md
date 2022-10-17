@@ -43,6 +43,8 @@ You must be logged in to linode.com to complete the following steps.
 6. **Add Node Pools:**  Click `Dedicated CPU` and click the blue `Add` button at the end of the **Dedicated 4 GB** line
 7. When your settings match the image below, click `Create Cluster`
 
+![LKE Settings](img/lke.png)
+
 It may take a couple of minutes for your cluster to be created.
 
 ## Connect to your Kubernetes cluster
