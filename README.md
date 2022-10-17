@@ -18,14 +18,18 @@ Instructions for [Windows](https://kubernetes.io/docs/tasks/tools/install-kubect
 
 If you need to update your PATH variable:
 
-MacOS: 
-Windows: 
+- MacOS: 
+- Windows: 
+
+**Install git**
+
+<coming soon>
 
 You will probably need to quit and re-open your terminal.
 
 ## Sign-up to Linode
 
-Go to linode.com and sign-up with your coupon code...
+Go to [linode.com](https://linode.com) and sign-up with your coupon code...
 
 ## Create a Kubernetes cluster on Linode
 
