@@ -7,8 +7,9 @@ Complete the following steps to build a lab environment. They may look complicat
 3. Create a Kubernetes cluster on Linode
 4. Connect to your Kubernetes cluster
 5. Build your lab environment
+6. Clean-up
 
-## Install `kubectl` and `git`
+## 1. Install `kubectl` and `git`
 
 **Install kubectl**
 
@@ -16,29 +17,25 @@ Instructions for [Mac](https://kubernetes.io/docs/tasks/tools/install-kubectl-ma
 
 Instructions for [Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/#install-kubectl-on-windows)
 
-If you need to update your PATH variable:
-
-- MacOS: 
-- Windows: 
-
 **Install git**
 
-<coming soon>
+MacOS: `brew install git`
 
-You will probably need to quit and re-open your terminal.
+Windows: Download the installation exe from [here](https://git-scm.com/download/win) and follow the installation wizard.
+You should quit and re-open your terminal.
 
-## Sign-up to Linode
+## 2. Sign-up to Linode
 
-Go to [linode.com](https://linode.com) and sign-up with your coupon code...
+Go to [linode.com](https://login.linode.com/signup?promo=kubeconna2022NP) and complete your sign-up. This link includes $100 of free credit to pay for your cluster during the workshop.
 
-## Create a Kubernetes cluster on Linode
+## 3. Create a Kubernetes cluster on Linode
 
 You must be logged in to linode.com to complete the following steps.
 
 1. Select **Kubernetes** on the left-hand navigation pane
 2. Choose `Create Cluster` and set the following options
 3. **Cluster label:** Give your cluster a name such as **ckad**
-4. **Region:** Fremont, CA
+4. **Region:** Dallas, TX 
 5. **Kubernetes Version:** 1.23
 6. **Add Node Pools:**  Click `Dedicated CPU` and click the blue `Add` button at the end of the **Dedicated 4 GB** line
 7. When your settings match the image below, click `Create Cluster`
@@ -47,7 +44,7 @@ You must be logged in to linode.com to complete the following steps.
 
 It may take a couple of minutes for your cluster to be created.
 
-## Connect to your Kubernetes cluster
+## 4. Connect to your Kubernetes cluster
 
 You must be logged in to linode.com to complete the following steps.
 
@@ -68,11 +65,11 @@ lke76472-118784-634d2eb354b1   Ready    <none>   4m51s   v1.23.6
 
 **Congratulations, you're connected to your Kubernetes cluster.**
 
-## Build your lab environment
+## 5. Build your lab environment
 
 Open a terminal and run the following commands to build your lab environment.
 
-You must have `kubectl` and `git` installed to complete these steps. You must also be connected to the Kubernetes cluster your just created on Linode.
+You must have `kubectl` and `git` installed to complete these steps. You must also be connected to the Kubernetes cluster you just created on Linode.
 
 **Deploy an NGINX ingress controller**
 
@@ -125,3 +122,31 @@ kubecon           Active   31s
 pluralsight       Active   35s
 sa001             Active   32s
 ```
+
+## 6. Clean-up
+
+Run the following steps after the workshop is finished to shut down your lab and return to your pre-lab settings.
+
+**Delete your Kubernetes cluster**
+
+You must be logged in to Linode.com to complete these steps.
+
+1. Click `Kubernetes` in the left navigation pane. Your cluster will be listed.
+2. Click the `Delete` button on the far right of your cluster and follow the prompts. If you have other clusters, be sure to delete the cluster used for the workshop. You may be prompted to type the name of your cluster as confirmation of the operation.
+
+**Delete any other Linode resources**
+
+It's possible that your actions during the workshop created other resources on Linode.com. These include NodeBalancers and Volumes. These must be deleted to prevent any unwanted costs.
+
+1. Click `NodeBalancers` and delete any NodeBalancers created as part of the lab.
+2. Click `Volumes` and clik the three dots to the far right of each volume created as part of the workshop. Choose `Delete` from the list and follo the prompts.
+
+**Revert your `kubeconfig`**
+
+If you already had `kubectl` installed you will need to revert to your saved `kubeconfig` file.
+
+1. Navigate to the hidden `./kube` folder in your home folder
+2. Rename the `config` file to `config.workshop`
+3. Rename the `config.bkp` file to `config`
+
+Your `kubeconfig` is now reverted to it's pre-workshop configuration.
