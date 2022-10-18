@@ -13,15 +13,15 @@ Complete the following steps to build a lab environment. They may look complicat
 
 **Install kubectl**
 
-Instructions for [Mac](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/#install-with-homebrew-on-macos)
+- Instructions for [Mac](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/#install-with-homebrew-on-macos)
 
-Instructions for [Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/#install-kubectl-on-windows)
+- Instructions for [Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/#install-kubectl-on-windows)
 
 **Install git**
 
-MacOS: `brew install git`
+- MacOS: `brew install git`
 
-Windows: Download the installation exe from [here](https://git-scm.com/download/win) and follow the installation wizard.
+- Windows: Download the installation exe from [here](https://git-scm.com/download/win) and follow the installation wizard.
 You should quit and re-open your terminal.
 
 ## 2. Sign-up to Linode
@@ -71,20 +71,21 @@ Open a terminal and run the following commands to build your lab environment.
 
 You must have `kubectl` and `git` installed to complete these steps. You must also be connected to the Kubernetes cluster you just created on Linode.
 
-**Deploy an NGINX ingress controller**
+**5.1 Deploy an NGINX ingress controller**
 
 `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/cloud/deploy.yaml`
 
-**Clone the lab configuration files from GitHub**
+**5.2 Clone the lab configuration files from GitHub**
+
 It is recommended to run the following command from the root of your home folder or a temp directory.
 
 `git clone https://github.com/nigelpoulton/ckad-exam-cram.git`
 
-**Change into the 'ckad-exam-cram' directory**
+**5.3 Change into the 'ckad-exam-cram' directory**
 
 `cd ckad-exam-cram`
 
-**Build your lab**
+**5.4 Build your lab**
 
 Run the following command from within the `ckad-exam-cram` directory.
 
@@ -92,7 +93,7 @@ Run the following command from within the `ckad-exam-cram` directory.
 
 If the command returns an error deploying the `app.com` Ingress resource, wait two minutes and try again. This is usually because the NGINX controller is still installing.
 
-**Check your lab**
+**5.5 Check your lab**
 
 Run the following commands. If your outputs look the same, your lab is ready to go.
 
