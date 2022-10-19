@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: kubecon
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: web-fe
+      project: ps-ckad
+  template:
+    metadata:
+      labels:
+        app: web-fe
+        project: ps-ckad
+    spec: 
+      containers:
+      - name: ctr
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        image: nigelpoulton/qsk-book:1.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: kubecon
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: web-fe
+    project: ps-ckad
+    env: kubecon

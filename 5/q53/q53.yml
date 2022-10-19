@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videos
+  namespace: ckad-ftw
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: videos
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: videos
+    spec:
+      containers:
+      - name: video-pod
+        image: nigelpoulton/k8sbook:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books
+  namespace: ckad-ftw
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: books
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: books
+    spec:
+      containers:
+      - name: hello-books
+        image: nigelpoulton/k8sbook:2.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-videos
+  namespace: ckad-ftw
+spec:
+  selector:
+    app: videos
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-books
+  namespace: ckad-ftw
+spec:
+  selector:
+    app: books
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app.com
+  namespace: ckad-ftw
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: videos.app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-videos
+            port:
+              number: 80
+  - host: books.app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-books
+            port:
+              number: 80
+  - host: app.com
+    http:
+      paths:
+      - path: /videos
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-videos
+            port:
+              number: 80
+      - path: /books
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-books
+            port:
+              number: 80

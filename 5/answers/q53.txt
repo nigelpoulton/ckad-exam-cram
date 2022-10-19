@@ -1,0 +1,2 @@
+The issue is that the ING YAML doesn’t reference the ingressClassName: nginx so hasn’t been associated and got an IP
+

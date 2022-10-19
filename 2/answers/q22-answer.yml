@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web500
+  namespace: ckad002
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  minReadySeconds: 5
+  selector:
+    matchLabels:
+      project: qsk-book
+  template:
+    metadata:
+      labels:
+        project: qsk-book
+    spec: 
+      containers:
+      - name: qsk-pod
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        image: nigelpoulton/qsk-book:1.1
+

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: svc-app
+  namespace: exam-ckad
+  labels:
+    project: exam-cram
+spec:
+  initContainers:
+  - name: svc-check
+    image: busybox
+    command: ['sh', '-c', 'until nslookup ckad-svc; do echo waiting for Service; sleep 1; done; echo Service found!']
+  containers:
+  - name: app
+    image: nigelpoulton/web-app:1.0
+    ports:
+      - containerPort: 8080

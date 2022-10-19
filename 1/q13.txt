@@ -1,0 +1,4 @@
+- name: svc-check
+    image: busybox
+    command: ['sh', '-c', 'until nslookup ckad-svc; do echo waiting for Service; sleep 1; done; echo Service found!']
+

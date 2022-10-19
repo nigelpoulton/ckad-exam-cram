@@ -1,0 +1,14 @@
+# CLI alternative
+# kubectl expose pod svc-app --port=8080 --target-port=8080 --name=ckad-svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: ckad-svc
+  namespace: exam-ckad
+spec:
+  selector:
+    project: ckad
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

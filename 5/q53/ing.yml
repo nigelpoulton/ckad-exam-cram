@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app.com
+  namespace: ckad-ftw
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: videos.app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-videos
+            port:
+              number: 80
+  - host: books.app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-books
+            port:
+              number: 80
+  - host: app.com
+    http:
+      paths:
+      - path: /videos
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-videos
+            port:
+              number: 80
+      - path: /books
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-books
+            port:
+              number: 80

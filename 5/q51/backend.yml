@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-backend
+  namespace: detroit
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+      - name: check-db-ready
+        image: postgres:9.6.5
+        command: ['sh', '-c', 
+          'until pg_isready -h postgres -p 5432; 
+          do echo waiting for database; sleep 2; done;']
+      containers:
+        - name: backend
+          envFrom:
+            - configMapRef:
+                name: db-access
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
+          image: nigelpoulton/ckad:pluralsight_backend
+          imagePullPolicy: IfNotPresent
+          readinessProbe:
+            httpGet:
+              path: /api/v1/
+              port: api
+          livenessProbe:
+            httpGet:
+              path: /api/v1/
+              port: api
+          ports:
+            - name: api
+              containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: detroit
+  labels:
+    app: backend-svc
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: backend

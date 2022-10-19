@@ -1,0 +1,1 @@
+Edit the app.yml file and comment out or delete the env: kubecon in the SERVICE SELECTOR

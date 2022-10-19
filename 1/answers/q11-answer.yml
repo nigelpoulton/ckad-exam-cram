@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job1
+  namespace: pluralsight
+spec:
+  completions: 5
+  parallelism: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: ctr
+        image: alpine:latest
+        command: ["echo",  "Let's smash the CKAD"]

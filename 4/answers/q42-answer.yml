@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-access
+  namespace: db001
+data:
+  POSTGRES_USER: nigel
+  POSTGRES_PASSWORD: k8srocks
+  POSTGRES_DB: store
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ckad-db
+  namespace: db001
+spec:
+  selector:
+    matchLabels:
+      app: db
+  serviceName: ckad-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: ckad-db
+          image: postgres
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi  
+            limits:
+              cpu: 500m
+              memory: 512Mi        
+          envFrom:
+            - configMapRef:
+                name: db-access
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/pgdata
+              name: postgres
+              subPath: postgres-db
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: linode-block-storage
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ckad-db
+  namespace: db001
+  labels:
+    app: postgres
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: db

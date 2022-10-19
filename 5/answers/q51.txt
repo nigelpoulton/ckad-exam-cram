@@ -1,0 +1,3 @@
+netpol.yml isn't deployed, but the deny.yml file is. This will lock all traffic down.
+
+TO FIX: kubectl apply -f netpol.yml

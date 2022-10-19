@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-pod
+  namespace: sa001
+  labels:
+    zone: prod
+    version: v1
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - name: hello-ctr
+    image: nigelpoulton/k8sbook:1.0
+    ports:
+    - containerPort: 8080

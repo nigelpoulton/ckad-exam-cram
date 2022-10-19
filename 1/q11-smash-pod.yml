@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smasher
+  namespace: pluralsight
+spec:
+  restartPolicy: Never
+  containers:
+  - name: ctr
+    image: alpine:latest
+    command: ["echo",  "Let's smash the CKAD"]

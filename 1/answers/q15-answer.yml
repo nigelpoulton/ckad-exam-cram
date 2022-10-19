@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vol-app
+  namespace: cram001
+spec:
+  volumes:
+  - name: html
+    emptyDir: {}
+  containers:
+  - name: gh-sync
+    image: k8s.gcr.io/git-sync:v3.1.6
+    volumeMounts:
+    - name: html
+      mountPath: /tmp/git
+    env:
+    - name: GIT_SYNC_REPO
+      value: https://github.com/nigelpoulton/ps-sidecar.git
+    - name: GIT_SYNC_BRANCH
+      value: master
+    - name: GIT_SYNC_DEPTH
+      value: "1"
+    - name: GIT_SYNC_DEST
+      value: "html"
+  - name: web-app
+    image: nginx
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/

@@ -1,0 +1,519 @@
+# RUN THIS kubectl apply COMMAND FIRST
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/cloud/deploy.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pluralsight
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cram001
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: exam-ckad
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad002
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad-cram
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad003
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: db001
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sa001
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: detroit
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubecon
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad-ftw
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vol-app
+  namespace: cram001
+spec:
+  volumes:
+  - name: html
+    persistentVolumeClaim:
+      claimName: pvc-ckad
+  containers:
+  - name: gh-sync
+    image: k8s.gcr.io/git-sync:v3.1.6
+    volumeMounts:
+    - name: html
+      mountPath: /tmp/git
+    env:
+    - name: GIT_SYNC_REPO
+      value: https://github.com/nigelpoulton/ps-sidecar.git
+    - name: GIT_SYNC_BRANCH
+      value: master
+    - name: GIT_SYNC_DEPTH
+      value: "1"
+    - name: GIT_SYNC_DEST
+      value: "html"
+  - name: web-app
+    image: nginx
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web500
+  namespace: ckad002
+  labels:
+    project: qsk-book
+spec:
+  containers:
+  - name: qsk-pod
+    imagePullPolicy: Always
+    ports:
+    - containerPort: 8080
+    image: nigelpoulton/qsk-book:1.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-web
+  namespace: ckad003
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-fe
+      project: ps-ckad
+  template:
+    metadata:
+      labels:
+        app: web-fe
+        project: ps-ckad
+    spec: 
+      containers:
+      - name: ctr
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+        ports:
+        - containerPort: 8080
+        image: nigelpoulton/qsk-book:1.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: ckad003
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: web-fe
+    project: ps-ckad
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ckad-db
+  namespace: db001
+spec:
+  selector:
+    matchLabels:
+      app: db
+  serviceName: ckad-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: ckad-db
+          image: postgres
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: POSTGRES_USER
+              value: nigel
+            - name: POSTGRES_PASSWORD
+              value: k8srocks
+            - name: POSTGRES_DB
+              value: store  
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/pgdata
+              name: postgres
+              subPath: postgres-db
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: linode-block-storage
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ckad-db
+  namespace: db001
+  labels:
+    app: postgres
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: db
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-pod
+  namespace: sa001
+  labels:
+    zone: prod
+    version: v1
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - name: hello-ctr
+    image: nigelpoulton/k8sbook:1.0
+    ports:
+    - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-backend
+  namespace: detroit
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+      - name: check-db-ready
+        image: postgres:9.6.5
+        command: ['sh', '-c', 
+          'until pg_isready -h postgres -p 5432; 
+          do echo waiting for database; sleep 2; done;']
+      containers:
+        - name: backend
+          envFrom:
+            - configMapRef:
+                name: db-access
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
+          image: nigelpoulton/ckad:pluralsight_backend
+          imagePullPolicy: IfNotPresent
+          readinessProbe:
+            httpGet:
+              path: /api/v1/
+              port: api
+          livenessProbe:
+            httpGet:
+              path: /api/v1/
+              port: api
+          ports:
+            - name: api
+              containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: detroit
+  labels:
+    app: backend-svc
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: backend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-access
+  namespace: detroit
+data:
+  POSTGRES_USER: nigel
+  POSTGRES_PASSWORD: k8srocks
+  POSTGRES_DB: store
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-db
+  namespace: detroit
+spec:
+  selector:
+    matchLabels:
+      app: db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: db-access
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: detroit
+  labels:
+    app: db
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: db
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: detroit
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: kubecon
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: web-fe
+      project: ps-ckad
+  template:
+    metadata:
+      labels:
+        app: web-fe
+        project: ps-ckad
+    spec: 
+      containers:
+      - name: ctr
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        image: nigelpoulton/qsk-book:1.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: kubecon
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: web-fe
+    project: ps-ckad
+    env: kubecon
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videos
+  namespace: ckad-ftw
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: videos
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: videos
+    spec:
+      containers:
+      - name: video-pod
+        image: nigelpoulton/k8sbook:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books
+  namespace: ckad-ftw
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: books
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: books
+    spec:
+      containers:
+      - name: hello-books
+        image: nigelpoulton/k8sbook:2.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-videos
+  namespace: ckad-ftw
+spec:
+  selector:
+    app: videos
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-books
+  namespace: ckad-ftw
+spec:
+  selector:
+    app: books
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app.com
+  namespace: ckad-ftw
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: videos.app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-videos
+            port:
+              number: 80
+  - host: books.app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-books
+            port:
+              number: 80
+  - host: app.com
+    http:
+      paths:
+      - path: /videos
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-videos
+            port:
+              number: 80
+      - path: /books
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-books
+            port:
+              number: 80

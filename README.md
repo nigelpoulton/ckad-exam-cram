@@ -1,9 +1,11 @@
 # README
 
-Complete the following steps to build a lab environment. They may look complicated, but they're not.
+Welcome to the CKAD Exam Cram workshop!
+
+Complete the following sections to build a lab environment. The steps may look complicated, but they're not.
 
 1. Install `kubectl` and `git`
-2. Sign-up to Linode
+2. Sign-up to Linode ($100 free credit included)
 3. Create a Kubernetes cluster on Linode
 4. Connect to your Kubernetes cluster
 5. Build your lab environment
@@ -22,6 +24,7 @@ Complete the following steps to build a lab environment. They may look complicat
 - MacOS: `brew install git`
 
 - Windows: Download the installation exe from [here](https://git-scm.com/download/win) and follow the installation wizard.
+
 You should quit and re-open your terminal.
 
 ## 2. Sign-up to Linode
@@ -37,19 +40,19 @@ You must be logged in to linode.com to complete the following steps.
 3. **Cluster label:** Give your cluster a name such as **ckad**
 4. **Region:** Dallas, TX 
 5. **Kubernetes Version:** 1.23
-6. **Add Node Pools:**  Click `Dedicated CPU` and click the blue `Add` button at the end of the **Dedicated 4 GB** line
+6. **Add Node Pools:**  Click `Dedicated CPU` and click the blue `Add` button at the end of the **Dedicated 4 GB** line (this will add 3 x 4GB nodes)
 7. When your settings match the image below, click `Create Cluster`
 
 ![LKE Settings](img/lke.png)
 
-It may take a couple of minutes for your cluster to be created.
+It may take a couple of minutes for your cluster to be ready.
 
 ## 4. Connect to your Kubernetes cluster
 
 You must be logged in to linode.com to complete the following steps.
 
 1. Click **Kubernetes** on the left-hand navigation pane
-2. Click the `Download kubeconfig` link for your cluster
+2. Click the `Download kubeconfig` link for your cluster (the download will fail if your cluster is still being created)
 3. Copy the downloaded file to the hidden `./kube` folder in your home directory
     - If you already have a file called `config` in your hidden `./kube` folder, rename the existing file to `config.bkp`
     - Rename the file you just downloaded from Linode and copied to your hidden `./kube` folder to `config`. Be sure the file is called `config` and **not** something like `config.yml`.
@@ -73,25 +76,33 @@ You must have `kubectl` and `git` installed to complete these steps. You must al
 
 **5.1 Deploy an NGINX ingress controller**
 
-`kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/cloud/deploy.yaml`
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/cloud/deploy.yaml
+```
 
 **5.2 Clone the lab configuration files from GitHub**
 
 It is recommended to run the following command from the root of your home folder or a temp directory.
 
-`git clone https://github.com/nigelpoulton/ckad-exam-cram.git`
+```
+git clone https://github.com/nigelpoulton/ckad-exam-cram.git
+```
 
 **5.3 Change into the 'ckad-exam-cram' directory**
 
-`cd ckad-exam-cram`
+```
+cd ckad-exam-cram
+```
 
 **5.4 Build your lab**
 
 Run the following command from within the `ckad-exam-cram` directory.
 
-`kubectl apply -f ckad-lab.yml`
+```
+kubectl apply -f ckad-lab.yml
+```
 
-If the command returns an error deploying the `app.com` Ingress resource, wait two minutes and try again. This is usually because the NGINX controller is still installing.
+If the command returns an error deploying the `app.com` Ingress resource, wait a couple of minutes and run the command again. This happens if the NGINX controller is still installing.
 
 **5.5 Check your lab**
 
@@ -128,6 +139,18 @@ sa001             Active   32s
 
 Run the following steps after the workshop is finished to shut down your lab and return to your pre-lab settings.
 
+**Delete Kubernetes resources**
+
+Run the following commands from the root folder of the git repo. If you followed the instructions, this will be the `ckad-exam-cram` folder.
+
+```
+kubectl delete -f ckad-lab.yml
+<Resources being deleted>
+
+kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/cloud/deploy.yaml
+<Resources being deleted>
+```
+
 **Delete your Kubernetes cluster**
 
 You must be logged in to Linode.com to complete these steps.
@@ -135,19 +158,19 @@ You must be logged in to Linode.com to complete these steps.
 1. Click `Kubernetes` in the left navigation pane. Your cluster will be listed.
 2. Click the `Delete` button on the far right of your cluster and follow the prompts. If you have other clusters, be sure to delete the cluster used for the workshop. You may be prompted to type the name of your cluster as confirmation of the operation.
 
-**Delete any other Linode resources**
+**Delete other Linode resources**
 
-It's possible that your actions during the workshop created other resources on Linode.com. These include NodeBalancers and Volumes. These must be deleted to prevent any unwanted costs.
+Previous steps should have deleted all resouces created as part of the lab. The following steps are intended to catch any resources not deleted by previous steps.
 
 1. Click `NodeBalancers` and delete any NodeBalancers created as part of the lab.
 2. Click `Volumes` and clik the three dots to the far right of each volume created as part of the workshop. Choose `Delete` from the list and follo the prompts.
 
 **Revert your `kubeconfig`**
 
-If you already had `kubectl` installed you will need to revert to your saved `kubeconfig` file.
+If you already had `kubectl` installed, you will need to revert to your saved `kubeconfig` file.
 
 1. Navigate to the hidden `./kube` folder in your home folder
-2. Rename the `config` file to `config.workshop`
+2. Delete the file called `config`
 3. Rename the `config.bkp` file to `config`
 
 Your `kubeconfig` is now reverted to it's pre-workshop configuration.

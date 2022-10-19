@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sleeper
+  namsepace: exam-ckad
+spec:
+  completions: 4
+  parallelism: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: ctr
+        image: alpine:latest
+        command: ["sleep",  "10"]
+
+
