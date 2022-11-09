@@ -135,9 +135,9 @@ pluralsight       Active   35s
 sa001             Active   32s
 ```
 
-## 6. Clean-up
+## 6. Clean-up (Complete when you're FINISHED)
 
-Run the following steps after the workshop is finished to shut down your lab and return to your pre-lab settings.
+Run the following steps **after the workshop is finished to shut down your lab and return to your pre-lab settings.**
 
 **Delete Kubernetes resources**
 
